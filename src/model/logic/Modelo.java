@@ -25,33 +25,35 @@ public class Modelo {
 	public static String PATHvertices = "./data/bogota_vertices.txt";
 
 	public static String PATHarcos = "./data/bogota_arcos.txt";
-	
+
+	public static String PATHarcosVertices = "./data/grafo";
+
 	public static String PATHcomparendos = "./data/Comparendos_DEI_2018_Bogotá_D.C.geojson";
-	
-	public RedBlackBST<Integer, EstacionDePolicia> listaCerdos;
-	
-	public RedBlackBST<Integer, Comparendo> listaComparendos;
+
+	public Queue<EstacionDePolicia> listaCerdos;
+
+	public Queue<Comparendo> listaComparendos;
 
 	int mayorId = 0;
 
 	private MiGrafo<Integer, Lugar> grafito;
-	
+
 
 
 	public Modelo()
 	{
-		
-
+		listaCerdos = new Queue<EstacionDePolicia>();
+		listaComparendos = new Queue<Comparendo>();
 	}
 
 
 	public  String agregarEstacionesDeCerdos()
 	{
-		
+
 		JsonReader reader1;
 		try 
 		{
-			
+
 			reader1 = new JsonReader(new FileReader(PATHcerdos));
 			JsonElement elem = JsonParser.parseReader(reader1);
 			JsonArray e2 = elem.getAsJsonObject().get("features").getAsJsonArray();
@@ -63,28 +65,65 @@ public class Modelo {
 				String EPODIR_SITIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPODIR_SITIO").getAsString();
 				double EPOLATITUD = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLATITUD").getAsDouble();
 				double EPOLONGITU = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLONGITU").getAsDouble();
-				String EPOSERVICIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOCOD_PROY").getAsString();
-				String EPOHORARIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOCOD_PROY").getAsString();
-				String EPOTELEFON = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOCOD_PROY").getAsString();
-				String EPOIULOCAL = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOCOD_PROY").getAsString();
-				
-				
+				String EPOSERVICIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOSERVICIO").getAsString();
+				String EPOHORARIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOHORARIO").getAsString();
+				String EPOTELEFON = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOTELEFON").getAsString();
+				String EPOIULOCAL = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOIULOCAL").getAsString();
+
+
 				EstacionDePolicia c = new EstacionDePolicia(OBJECTID, DESCRIP, EPODIR_SITIO, EPOLATITUD , EPOLONGITU, 
 						EPOSERVICIO, EPOHORARIO, EPOTELEFON, EPOIULOCAL);
-				listaCerdos.put(c.getObjectID(), c);
-				
+				listaCerdos.enqueue(c);
+
 			}
-			
+
 		} 
 		catch (FileNotFoundException e) 
 		{
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
-		return "\nCarga completa \nEl número total de estaciones de cerdos es: "+  "\n\nLa estacion con mayor OBJECTID es: \n" + listaCerdos.get(listaCerdos.max());
+		return "\nCarga completa \nEl número total de estaciones de cerdos es: "+ listaCerdos.size() + "\n\nLa estacion con mayor OBJECTID es: \n";
 	}
-	
-	public  String agregarComparendos()
+
+
+	public void agragarArcosYVertices()
+	{
+		try {
+			JsonReader reader1 ;
+			Queue<String> arcos = new Queue<String>();
+			reader1 = new JsonReader(new FileReader(PATHarcosVertices));
+			JsonElement elem = JsonParser.parseReader(reader1);
+			JsonArray e2 = elem.getAsJsonObject().get("features").getAsJsonArray();
+
+			for(JsonElement e: e2) 
+			{
+				int IDINICIAL = e.getAsJsonObject().get("properties").getAsJsonObject().get("IDINICIAL").getAsInt();
+				double LONGITUD = e.getAsJsonObject().get("properties").getAsJsonObject().get("LONGITUD").getAsDouble();
+				double LATITUD = e.getAsJsonObject().get("properties").getAsJsonObject().get("LATITUD").getAsDouble();
+				grafito.addVertex(IDINICIAL, new Lugar(LONGITUD, LATITUD));
+				for (JsonElement arco : e.getAsJsonObject().get("properties").getAsJsonObject().get("ARCOS").getAsJsonArray()) {
+					int IDFINAL = arco.getAsJsonObject().get("properties").getAsJsonObject().get("IDFINAL").getAsInt();
+					double COSTO = arco.getAsJsonObject().get("properties").getAsJsonObject().get("COSTO").getAsDouble();
+					arcos.enqueue(IDINICIAL + " " + IDFINAL + " " + COSTO);
+				}
+
+			}
+			for (String jsonElement : arcos) {
+				String[] datos = arcos.dequeue().split(" ");
+				grafito.addEdge(Integer.parseInt(datos[0]), Integer.parseInt(datos[1]), Double.parseDouble(datos[3]));
+			}
+		}
+
+		catch (FileNotFoundException e) 
+		{
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+
+	}
+
+	public String agregarComparendos()
 	{
 		JsonReader reader;
 		try 
@@ -103,7 +142,7 @@ public class Modelo {
 				String s = e.getAsJsonObject().get("properties").getAsJsonObject().get("FECHA_HORA").getAsString();
 				String almostDate =  s.split("Z") [0];
 				String finalDate = almostDate.split("T") [0] + " " + almostDate.split("T") [1];
-				
+
 				Date FECHA_HORA = parser.parse(finalDate); 
 				String CLASE_VEHI = e.getAsJsonObject().get("properties").getAsJsonObject().get("CLASE_VEHICULO").getAsString();
 				String TIPO_SERVI = e.getAsJsonObject().get("properties").getAsJsonObject().get("TIPO_SERVICIO").getAsString();
@@ -117,9 +156,9 @@ public class Modelo {
 						.get(1).getAsDouble();
 
 				Comparendo c = new Comparendo(OBJECTID, FECHA_HORA, CLASE_VEHI, TIPO_SERVI, INFRACCION, LOCALIDAD, longitud, latitud);
-				listaComparendos.put(c.darId(), c);
+				listaComparendos.enqueue(c);
 
-				
+
 			}
 		} 
 		catch (FileNotFoundException | ParseException e) 
@@ -127,95 +166,28 @@ public class Modelo {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
-		
-		return "\nCarga completa \nEl número total de comparendos es: "+ listaComparendos.size() +"\n\nEl comparendo con mayor OBJECTID es: \n" + listaComparendos.get(listaComparendos.max());
+
+		return "\nCarga completa \nEl número total de comparendos es: "+ listaComparendos.size() +"\n\nEl comparendo con mayor OBJECTID es: \n" ;
 	}
 
-
-	public String cargaVertices() 
+	public int darE()
 	{
-		Lugar mayor = null;
-		
-		try {
-			FileReader reader;
-			reader = new FileReader(PATHvertices);
-
-			BufferedReader bufferedReader = new BufferedReader(reader);
-			Queue<String> vertices = new Queue<String>();
-			String line = "";
-			while ((line = bufferedReader.readLine()) != null) {
-				String datos = line;
-				vertices.enqueue(datos);
-			}
-			grafito = new MiGrafo<>(vertices.size());
-			while (vertices.size() != 0) {
-				String[] completo = vertices.dequeue().split(",");
-				int id = Integer.parseInt(completo[0]); 
-				double latitud = Double.parseDouble(completo[1]);
-				double longitud = Double.parseDouble(completo[2]);
-				Lugar lugar = new Lugar(latitud, longitud);
-				grafito.addVertex(id, lugar);
-				if(id > mayorId) mayor = lugar;
-			}
-
-			reader.close();
-
-			
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return "\nCarga completa \nEl número total de vertices es: "+ grafito.V() +"\n\nEl vertice con mayor OBJECTID es: \n" + mayor.darDatos();
-	}
-
-
-	public void cargarArcos()
-	{
-		try {
-			FileReader reader = new FileReader(PATHarcos);
-			BufferedReader bufferedReader = new BufferedReader(reader);
-
-			String line = "";
-			while ((line = bufferedReader.readLine()) != null) {
-				String[] datos = line.split(" ");
-
-				int primero = Integer.parseInt(datos[0]);
-				if(grafito.esta(primero)) {
-					double startLat = grafito.getInfoVertex(primero).getLatitud();
-					double startLong = grafito.getInfoVertex(primero).getLongitud();
-
-					for (int i = 1; i < datos.length; i++) {
-
-						int segundo = Integer.parseInt(datos[i]);
-						{
-							if(grafito.esta(segundo)) {
-
-								double endLat = grafito.getInfoVertex(primero).getLatitud();
-								double endLong = grafito.getInfoVertex(segundo).getLongitud();
-								Haversine peso = new Haversine();
-								grafito.addEdge(primero, segundo, peso.distance(startLat, startLong, endLat, endLong));
-							}
-						}
-
-					}
-				}
-			}
-			reader.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		return grafito.E();
 	}
 	
+	public int darV()
+	{
+		return grafito.V();
+	}
 
-	
+	public void encontrarMasCercano(double longitud, double latitud)
+	{
+		int idCercano = 0;
+		Haversine e = new Haversine();
+		
+		
+	}
+
+
 
 }
-
-
-
-
-
-
-

@@ -44,15 +44,13 @@ public class Controller {
 			case 0:
 				String numeroDeComparendos = modelo.agregarComparendos();
 				view.printMessage(numeroDeComparendos);
-				String numeroDeEstaciones = modelo.agregarComparendos();
+				String numeroDeEstaciones = modelo.agregarEstacionesDeCerdos();
 				view.printMessage(numeroDeEstaciones);
-				String numeroDeVertices = modelo.cargaVertices();
-				view.printMessage(numeroDeVertices + "\n");
-				modelo.cargarArcos();
-				view.printMessage("El numero de arcos es ");
-				break; 
-
-			
+				//modelo.agragarArcosYVertices();
+				//view.printMessage("\nEl numero de vertices es: \n" + modelo.darV());
+				//view.printMessage("\nEl numero de arcos es: \n" + modelo.darE());
+				
+				break;
 			
 
 
