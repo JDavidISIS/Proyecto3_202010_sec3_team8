@@ -1,4 +1,30 @@
-package model.data_structures;
+/******************************************************************************
+ *  Compilation:  javac SequentialSearchST.java
+ *  Execution:    java SequentialSearchST
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/31elementary/tinyST.txt  
+ *  
+ *  Symbol table implementation with sequential search in an
+ *  unordered linked list of key-value pairs.
+ *
+ *  % more tinyST.txt
+ *  S E A R C H E X A M P L E
+ *
+ *  % java SequentialSearchST < tinyST.txt 
+ *  L 11
+ *  P 10
+ *  M 9
+ *  X 7
+ *  H 5
+ *  C 4
+ *  R 3
+ *  A 8
+ *  E 12
+ *  S 0
+ *
+ ******************************************************************************/
+
+package algs4;
 
 /**
  *  The {@code SequentialSearchST} class represents an (unordered)
@@ -32,17 +58,17 @@ package model.data_structures;
  *  @author Robert Sedgewick
  *  @author Kevin Wayne
  */
-public class  BusquedaSecuencial<Key, Value> {
+public class SequentialSearchST<Key, Value> {
     private int n;           // number of key-value pairs
     private Node first;      // the linked list of key-value pairs
 
     // a helper linked list data type
     private class Node {
         private Key key;
-        private Queue<Value> val;
+        private Value val;
         private Node next;
 
-        public Node(Key key, Queue<Value> val, Node next)  {
+        public Node(Key key, Value val, Node next)  {
             this.key  = key;
             this.val  = val;
             this.next = next;
@@ -52,7 +78,7 @@ public class  BusquedaSecuencial<Key, Value> {
     /**
      * Initializes an empty symbol table.
      */
-    public BusquedaSecuencial() {
+    public SequentialSearchST() {
     }
 
     /**
@@ -95,7 +121,7 @@ public class  BusquedaSecuencial<Key, Value> {
      *     and {@code null} if the key is not in the symbol table
      * @throws IllegalArgumentException if {@code key} is {@code null}
      */
-    public Queue<Value> get(Key key) {
+    public Value get(Key key) {
         if (key == null) throw new IllegalArgumentException("argument to get() is null"); 
         for (Node x = first; x != null; x = x.next) {
             if (key.equals(x.key))
@@ -114,7 +140,7 @@ public class  BusquedaSecuencial<Key, Value> {
      * @param  val the value
      * @throws IllegalArgumentException if {@code key} is {@code null}
      */
-    public void put(Key key, Queue<Value> val) {
+    public void put(Key key, Value val) {
         if (key == null) throw new IllegalArgumentException("first argument to put() is null"); 
         if (val == null) {
             delete(key);
@@ -171,4 +197,42 @@ public class  BusquedaSecuencial<Key, Value> {
     }
 
 
+    /**
+     * Unit tests the {@code SequentialSearchST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+        SequentialSearchST<String, Integer> st = new SequentialSearchST<String, Integer>();
+        for (int i = 0; !StdIn.isEmpty(); i++) {
+            String key = StdIn.readString();
+            st.put(key, i);
+        }
+        for (String s : st.keys())
+            StdOut.println(s + " " + st.get(s));
+    }
 }
+
+/******************************************************************************
+ *  Copyright 2002-2020, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
